@@ -1941,15 +1941,14 @@ def _build_fresh_checkout_body(fresh_cfg: dict, bootstrap: dict) -> dict:
     base = json.loads(json.dumps(bootstrap.get("checkout_body") or {}))
     plan_cfg = fresh_cfg.get("plan") or {}
 
+    plan_name = plan_cfg.get("plan_name") or (base.get("plan_name") if base else None) or "chatgptteamplan"
+    is_plus = "plus" in str(plan_name).lower()
+    default_entry = "all_plans_pricing_modal" if is_plus else "team_workspace_purchase_modal"
+
     if not base:
         base = {
-            "entry_point": "team_workspace_purchase_modal",
-            "plan_name": "chatgptteamplan",
-            "team_plan_data": {
-                "workspace_name": "MyWorkspace",
-                "price_interval": "month",
-                "seat_quantity": 5,
-            },
+            "entry_point": default_entry,
+            "plan_name": plan_name,
             "billing_details": {
                 "country": "US",
                 "currency": "USD",
@@ -1957,30 +1956,40 @@ def _build_fresh_checkout_body(fresh_cfg: dict, bootstrap: dict) -> dict:
             "cancel_url": "https://chatgpt.com/#pricing",
             "checkout_ui_mode": "custom",
             "promo_campaign": {
-                "promo_campaign_id": "team-1-month-free",
+                "promo_campaign_id": "plus-1-month-free" if is_plus else "team-1-month-free",
                 "is_coupon_from_query_param": False,
             },
         }
+        if not is_plus:
+            base["team_plan_data"] = {
+                "workspace_name": "MyWorkspace",
+                "price_interval": "month",
+                "seat_quantity": 5,
+            }
 
     if plan_cfg.get("entry_point"):
         base["entry_point"] = plan_cfg["entry_point"]
-    base.setdefault("entry_point", "team_workspace_purchase_modal")
+    base.setdefault("entry_point", default_entry)
 
     if plan_cfg.get("plan_name"):
         base["plan_name"] = plan_cfg["plan_name"]
-    base.setdefault("plan_name", "chatgptteamplan")
+    base.setdefault("plan_name", plan_name)
 
-    team_plan_data = dict(base.get("team_plan_data") or {})
-    if plan_cfg.get("workspace_name"):
-        team_plan_data["workspace_name"] = str(plan_cfg["workspace_name"])
-    team_plan_data.setdefault("workspace_name", "MyWorkspace")
-    if plan_cfg.get("price_interval"):
-        team_plan_data["price_interval"] = plan_cfg["price_interval"]
-    team_plan_data.setdefault("price_interval", "month")
-    if "seat_quantity" in plan_cfg and plan_cfg["seat_quantity"] is not None:
-        team_plan_data["seat_quantity"] = int(plan_cfg["seat_quantity"])
-    team_plan_data.setdefault("seat_quantity", 5)
-    base["team_plan_data"] = team_plan_data
+    if is_plus:
+        # Plus 没有 workspace/seat 概念，删掉防止后端拒绝
+        base.pop("team_plan_data", None)
+    else:
+        team_plan_data = dict(base.get("team_plan_data") or {})
+        if plan_cfg.get("workspace_name"):
+            team_plan_data["workspace_name"] = str(plan_cfg["workspace_name"])
+        team_plan_data.setdefault("workspace_name", "MyWorkspace")
+        if plan_cfg.get("price_interval"):
+            team_plan_data["price_interval"] = plan_cfg["price_interval"]
+        team_plan_data.setdefault("price_interval", "month")
+        if "seat_quantity" in plan_cfg and plan_cfg["seat_quantity"] is not None:
+            team_plan_data["seat_quantity"] = int(plan_cfg["seat_quantity"])
+        team_plan_data.setdefault("seat_quantity", 5)
+        base["team_plan_data"] = team_plan_data
 
     billing_details = dict(base.get("billing_details") or {})
     if plan_cfg.get("billing_country"):

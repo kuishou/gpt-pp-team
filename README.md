@@ -65,6 +65,8 @@ flowchart LR
 
 ## 上手
 
+> 💡 **新手友好**：跑 `python -m webui.server` 起配置向导，点点鼠标 ~15 分钟生成两份 config。详见 [`webui/README.md`](webui/README.md)。
+
 ### 装
 
 ```bash

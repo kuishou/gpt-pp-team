@@ -29,14 +29,17 @@ __pycache__/
 *.pyc
 *.pyo
 
-# 备份
+# 备份（含 webui config_writer 写的 *.bak.<unix_ts>，里面是旧的真实凭据）
 *.bak_*
 *.bak-*
+*.bak.*
 
 # IDE / 工具
 .vscode/
 .idea/
 .serena/
+.superpowers/
+docs/superpowers/
 
 # 操作系统
 .DS_Store
@@ -45,3 +48,4 @@ Thumbs.db
 # 测试期临时数据
 test_*.py
 !test_rt.py.example
+!webui/tests/test_*.py
