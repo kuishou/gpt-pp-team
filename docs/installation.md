@@ -34,7 +34,7 @@ sudo curl -sSfL \
 ## 第二步：核心 Python 依赖
 
 ```bash
-git clone https://github.com/DanOps-1/Gpt-Agreement-Payment
+git clone https://github.com/DanOps-1/gpt-pp-team
 cd Gpt-Agreement-Payment
 
 pip install requests curl_cffi playwright camoufox browserforge mitmproxy pybase64
